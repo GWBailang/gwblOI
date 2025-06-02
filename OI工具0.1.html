@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OI-Tools</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#36CFC9',
+                        accent: '#722ED1',
+                        dark: '#1D2129',
+                        light: '#F2F3F5'
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .tool-shadow {
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            }
+            .tool-hover {
+                transition: all 0.3s ease;
+            }
+            .tool-hover:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+            }
+            .tab-active {
+                @apply border-b-2 border-primary text-primary;
+            }
+            .tab-inactive {
+                @apply border-b-2 border-transparent text-gray-500 hover:text-gray-700;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-inter text-dark min-h-screen flex flex-col">
+    <!-- 导航栏 -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa fa-code text-primary text-2xl"></i>
+                <h1 class="text-xl font-bold text-primary">OI-Tools</h1>
+            </div>
+            <nav>
+                <ul class="flex space-x-6">
+                    <li><a href="#calculators" class="text-gray-600 hover:text-primary transition-colors">计算器</a></li>
+                    <li><a href="#string" class="text-gray-600 hover:text-primary transition-colors">字符串处理</a></li>
+                    <li><a href="#math" class="text-gray-600 hover:text-primary transition-colors">数学工具</a></li>
+                    <li><a href="#sequence" class="text-gray-600 hover:text-primary transition-colors">数列处理</a></li>
+                    <li><a href="#graph" class="text-gray-600 hover:text-primary transition-colors">图可视化</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="flex-grow container mx-auto px-4 py-8">
+        <!-- 介绍部分 -->
+        <section class="mb-12 text-center">
+            <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-dark mb-4">OI-Tools</h2>
+            <p class="text-gray-600 max-w-2xl mx-auto">一站式解决OI中的各种计算、转换和处理需求，提高编程效率和解题速度。</p>
+        </section>
+
+        <!-- 计算器部分 -->
+        <section id="calculators" class="mb-16">
+            <h3 class="text-2xl font-bold text-dark mb-6 flex items-center">
+                <i class="fa fa-calculator text-primary mr-2"></i>
+                计算器工具
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- 内存计算工具 -->
+                <div class="bg-white rounded-xl p-6 tool-shadow tool-hover">
+                    <h4 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fa fa-memory text-secondary mr-2"></i>
+                        内存计算
+                    </h4>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">内存大小 (MB)</label>
+                            <input type="number" id="memory-size" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all" placeholder="输入内存大小">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">数据类型</label>
+                            <select id="data-type" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+                                <option value="int">int (4字节)</option>
+                                <option value="long">long long (8字节)</option>
+                                <option value="bool">bool (1字节)</option>
+                                <option value="double">double (8字节)</option>
+                            </select>
+                        </div>
+                        <button id="calculate-memory" class="w-full bg-primary hover:bg-primary/90 text-white py-2 px-4 rounded-lg transition-colors">
+                            计算可存储数量
+                        </button>
+                        <div id="memory-result" class="p-3 bg-gray-50 rounded-lg text-sm">
+                            结果将显示在这里...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 进制转换工具 -->
+                <div class="bg-white rounded-xl p-6 tool-shadow tool-hover">
+                    <h4 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fa fa-exchange text-secondary mr-2"></i>
+                        进制转换
+                    </h4>
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">源进制</label>
+                                <select id="source-base" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+                                    <option value="2">二进制</option>
+                                    <option value="8">八进制</option>
+                                    <option value="10" selected>十进制</option>
+                                    <option value="16">十六进制</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">目标进制</label>
+                                <select id="target-base" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+                                    <option value="2" selected>二进制</option>
+                                    <option value="8">八进制</option>
+                                    <option value="10">十进制</option>
+                                    <option value="16">十六进制</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">输入数值</label>
+                            <input type="text" id="base-number" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all" placeholder="输入要转换的数值">
+                        </div>
+                        <button id="convert-base" class="w-full bg-primary hover:bg-primary/90 text-white py-2 px-4 rounded-lg transition-colors">
+                            转换
+                        </button>
+                        <div id="base-result" class="p-3 bg-gray-50 rounded-lg text-sm">
+                            结果将显示在这里...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 位运算工具 -->
+                <div class="bg-white rounded-xl p-6 tool-shadow tool-hover">
+                    <h4 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fa fa-binary-tree text-secondary mr-2"></i>
+                        位运算工具
+                    </h4>
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">数值 A</label>
+                                <input type="number" id="bit-a" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all" placeholder="输入数值 A">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">数值 B</label>
+                                <input type="number" id="bit-b" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all" placeholder="输入数值 B">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">位运算操作</label>
+                            <select id="bit-operation" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+                                <option value="and">与 (AND)</option>
+                                <option value="or">或 (OR)</option>
+                                <option value="xor">异或 (XOR)</option>
+                                <option value="not">非 (NOT)</option>
+                                <option value="left">左移 (<<)</option>
+                                <option value="right">右移 (>>)</option>
+                            </select>
+                        </div>
+                        <button id="calculate-bit" class="w-full bg-primary hover:bg-primary/90 text-white py-2 px-4 rounded-lg transition-colors">
+                            计算
+                        </button>
+                        <div id="bit-result" class="p-3 bg-gray-50 rounded-lg text-sm">
+                            结果将显示在这里...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 字符串处理部分 -->
+        <section id="string" class="mb-16">
+            <h3 class="text-2xl font-bold text-dark mb-6 flex items-center">
+                <i class="fa fa-font text-accent mr-2"></i>
+                字符串处理工具
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- 大小写转换工具 -->
+                <div class="bg-white rounded-xl p-6 tool-shadow tool-hover">
+                    <h4 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fa fa-text-height text-secondary mr-2"></i>
+                        大小写转换
+                    </h4>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">输入文本</label>
+                            <textarea id="case-text" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all" placeholder="输入要转换的文本"></textarea>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button id="to-upper" class="bg-primary hover:bg-primary/90 text-white py-2 px-4 rounded-lg transition-colors">
+                                全部大写
+                            </button>
+                            <button id="to-lower" class="bg-secondary hover:bg-secondary/90 text-white py-2 px-4 rounded-lg transition-colors">
+                                全部小写
+                            </button>
+                            <button id="to-title" class="bg-accent hover:bg-accent/90 text-white py-2 px-4 rounded-lg transition-colors">
+                                大小写互转
+                            </button>
+                        </div>
+                        <div id="case-result" class="p-3 bg-gray-50 rounded-lg min-h-[60px]">
+                            转换结果将显示在这里...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 文本替换工具 -->
+                <div class="bg-white rounded-xl p-6 tool-shadow tool-hover">
+                    <h4 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fa fa-exchange text-secondary mr-2"></i>
+                        文本替换
+                    </h4>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">原始文本</label>
+                            <textarea id="replace-text" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all" placeholder="输入原始文本"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">要替换的文本</label>
+                            <input type="text" id="replace-from" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all" placeholder="输入要替换的文本">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">替换为</label>
+                            <input type="text" id="replace-to" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all" placeholder="输入替换文本">
+                        </div>
+                        <button id="replace-button" class="w-full bg-primary hover:bg-primary/90 text-white py-2 px-4 rounded-lg transition-colors">
+                            替换
+                        </button>
+                        <div id="replace-result" class="p-3 bg-gray-50 rounded-lg min-h-[60px]">
+                            替换结果将显示在这里...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 数学工具部分 -->
+        <section id="math" class="mb-16">
+            <h3 class="text-2xl font-bold text-dark mb-6 flex items-center">
+                <i class="fa fa-calculator text-accent mr-2"></i>
+                数学工具
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- 逆元计算工具 -->
+                <div class="bg-white rounded-xl p-6 tool-shadow tool-hover">
+                    <h4 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fa fa-exchange text-secondary mr-2"></i>
+                        逆元计算
+                    </h4>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">数值 a</label>
+                            <input type="number" id="inverse-a" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all" placeholder="输入数值 a">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">模数 m</label>
+                            <input type="number" id="inverse-m" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all" placeholder="输入模数 m">
+                        </div>
+                        <button id="calculate-inverse" class="w-full bg-primary hover:bg-primary/90 text-white py-2 px-4 rounded-lg transition-colors">
+                            计算逆元
+                        </button>
+                        <div id="inverse-result" class="p-3 bg-gray-50 rounded-lg text-sm">
+                            结果将显示在这里...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 快速幂工具 -->
+                <div class="bg-white rounded-xl p-6 tool-shadow tool-hover">
+                    <h4 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fa fa-exponent text-secondary mr-2"></i>
+                        快速幂
+                    </h4>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">底数 a</label>
+                            <input type="number" id="power-a" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all" placeholder="输入底数 a">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">指数 b</label>
+                            <input type="number" id="power-b" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all" placeholder="输入指数 b">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">模数 m (可选)</label>
+                            <input type="number" id="power-m" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all" placeholder="输入模数 m (可选)">
+                        </div>
+                        <button id="calculate-power" class="w-full bg-primary hover:bg-primary/90 text-white py-2 px-4 rounded-lg transition-colors">
+                            计算幂
+                        </button>
+                        <div id="power-result" class="p-3 bg-gray-50 rounded-lg text-sm">
+                            结果将显示在这里...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 组合计数工具 -->
+                <div class="bg-white rounded-xl p-6 tool-shadow tool-hover">
+                    <h4 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fa fa-combination text-secondary mr-2"></i>
+                        组合计数 C(n,k)
+                    </h4>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">总数 n</label>
+                            <input type="number" id="comb-n" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all" placeholder="输入总数 n">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">选取数 k</label>
+                            <input type="number" id="comb-k" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all" placeholder="输入选取数 k">
+                        </div>
+                        <button id="calculate-comb" class="w-full bg-primary hover:bg-primary/90 text-white py-2 px-4 rounded-lg transition-colors">
+                            计算组合数
+                        </button>
+                        <div id="comb-result" class="p-3 bg-gray-50 rounded-lg text-sm">
+                            结果将显示在这里...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 数列处理部分 -->
+        <section id="sequence" class="mb-16">
+            <h3 class="text-2xl font-bold text-dark mb-6 flex items-center">
+                <i class="fa fa-list-ol text-accent mr-2"></i>
+                数列处理工具
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- 序列统计工具 -->
+                <div class="bg-white rounded-xl p-6 tool-shadow tool-hover">
+                    <h4 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fa fa-bar-chart text-secondary mr-2"></i>
+                        序列统计
+                    </h4>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">输入序列（用空格或逗号分隔）</label>
+                            <textarea id="sequence-data" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all" placeholder="例如: 1 2 3 4 5 或 1,2,3,4,5"></textarea>
+                        </div>
+                        <button id="analyze-sequence" class="w-full bg-primary hover:bg-primary/90 text-white py-2 px-4 rounded-lg transition-colors">
+                            分析序列
+                        </button>
+                        <div id="sequence-result" class="p-3 bg-gray-50 rounded-lg text-sm">
+                            分析结果将显示在这里...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 区间操作工具 -->
+                <div class="bg-white rounded-xl p-6 tool-shadow tool-hover">
+                    <h4 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fa fa-arrows-h text-secondary mr-2"></i>
+                        区间加减
+                    </h4>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">初始序列（用空格或逗号分隔）</label>
+                            <textarea id="interval-data" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all" placeholder="例如: 1 2 3 4 5"></textarea>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">左端点 l</label>
+                                <input type="number" id="interval-l" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all" placeholder="左端点 l">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">右端点 r</label>
+                                <input type="number" id="interval-r" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all" placeholder="右端点 r">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">增量 delta</label>
+                                <input type="number" id="interval-delta" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all" placeholder="增量 delta">
+                            </div>
+                        </div>
+                        <button id="apply-interval" class="w-full bg-primary hover:bg-primary/90 text-white py-2 px-4 rounded-lg transition-colors">
+                            应用区间操作
+                        </button>
+                        <div id="interval-result" class="p-3 bg-gray-50 rounded-lg text-sm">
+                            操作结果将显示在这里...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 图可视化部分 -->
+        <section id="graph" class="mb-16">
+            <h3 class="text-2xl font-bold text-dark mb-6 flex items-center">
+                <i class="fa fa-project-diagram text-accent mr-2"></i>
+                图(graph)可视化工具
+            </h3>
+            <div class="bg-white rounded-xl p-6 tool-shadow">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <!-- 左侧输入区 -->
+                    <div class="lg:col-span-3">
+                        <h4 class="text-lg font-semibold mb-4 flex items-center">
+                            <i class="fa fa-keyboard-o text-secondary mr-2"></i>
+                            图数据输入
+                        </h4>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">每行一个点或边</label>
+                                <textarea id="graph-input" rows="15" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all" placeholder="例如:
+1
+2
+3
+1 2
+2 3 10">1
+2
+3
+4
+1 2
+2 3
+3 4
+4 1</textarea>
+                            </div>
+                            <button id="render-graph" class="w-full bg-primary hover:bg-primary/90 text-white py-2 px-4 rounded-lg transition-colors">
+                                渲染图
+                            </button>
+                            <button id="clear-graph" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-4 rounded-lg transition-colors">
+                                清除
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 中间图显示区 -->
+                    <div class="lg:col-span-6">
+                        <h4 class="text-lg font-semibold mb-4 flex items-center">
+                            <i class="fa fa-sitemap text-secondary mr-2"></i>
+                            图可视化
+                        </h4>
+                        <div class="border border-gray-200 rounded-lg overflow-hidden h-[500px] relative">
+                            <canvas id="graph-canvas" class="w-full h-full bg-gray-50"></canvas>
+                            <div id="graph-tooltip" class="absolute hidden bg-white p-2 rounded shadow-lg text-sm z-10"></div>
+                        </div>
+                        <div class="mt-4 text-sm text-gray-500">
+                            <p><i class="fa fa-info-circle"></i> 提示: 点击并拖动节点可以移动它们的位置</p>
+                        </div>
+                    </div>
+
+                    <!-- 右侧最短路计算区 -->
+                    <div class="lg:col-span-3">
+                        <h4 class="text-lg font-semibold mb-4 flex items-center">
+                            <i class="fa fa-road text-secondary mr-2"></i>
+                            最短路计算
+                        </h4>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">图类型(选择后需重新点击渲染)</label>
+                                <div class="flex items-center space-x-4">
+                                    <label class="inline-flex items-center">
+                                        <input type="radio" name="graph-type" value="undirected" class="form-radio text-primary" checked>
+                                        <span class="ml-2">无向图</span>
+                                    </label>
+                                    <label class="inline-flex items-center">
+                                        <input type="radio" name="graph-type" value="directed" class="form-radio text-primary">
+                                        <span class="ml-2">有向图</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">起点</label>
+                                <input type="number" id="path-start" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all" placeholder="输入起点">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">终点</label>
+                                <input type="number" id="path-end" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all" placeholder="输入终点">
+                            </div>
+                            <button id="calculate-path" class="w-full bg-primary hover:bg-primary/90 text-white py-2 px-4 rounded-lg transition-colors">
+                                计算路径
+                            </button>
+                            <div class="p-3 bg-gray-50 rounded-lg min-h-[100px]">
+                                <h5 class="font-medium text-gray-700 mb-2">最短路径</h5>
+                                <div id="shortest-path" class="text-sm">
+                                    结果将显示在这里...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <div class="flex items-center space-x-2">
+                        <i class="fa fa-code text-primary text-xl"></i>
+                        <span class="font-bold text-xl">OI-Tools</span>
+                    </div>
+                    <p class="text-gray-400 mt-2">为信息学竞赛打造的实用工具集</p>
+                </div>
+                <div class="flex space-x-6">
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fa fa-github text-xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fa fa-envelope text-xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fa fa-question-circle text-xl"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-6 pt-6 text-center text-gray-400 text-sm">
+                <p>© 2025 OI-Tools | 为信息学竞赛选手提供便利</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 内存计算工具
+        document.getElementById('calculate-memory').addEventListener('click', function() {
+            const size = parseFloat(document.getElementById('memory-size').value);
+            const type = document.getElementById('data-type').value;
+            
+            if (isNaN(size) || size <= 0) {
+                document.getElementById('memory-result').textContent = '请输入有效的内存大小！';
+                return;
+            }
+            
+            let bytesPerElement;
+            switch(type) {
+                case 'int': bytesPerElement = 4; break;
+                case 'long': bytesPerElement = 8; break;
+                case 'bool': bytesPerElement = 1; break;
+                case 'double': bytesPerElement = 8; break;
+                default: bytesPerElement = 4;
+            }
+            
+            const elements = (size * 1024 * 1024) / bytesPerElement;
+            const formattedElements = new Intl.NumberFormat().format(Math.floor(elements));
+            
+            document.getElementById('memory-result').textContent = `在 ${size} MB 内存中，可以存储大约 ${formattedElements} 个 ${type} 类型的数据。`;
+        });
+
+        // 进制转换工具
+        document.getElementById('convert-base').addEventListener('click', function() {
+            const sourceBase = parseInt(document.getElementById('source-base').value);
+            const targetBase = parseInt(document.getElementById('target-base').value);
+            const number = document.getElementById('base-number').value.trim();
+            
+            if (!number) {
+                document.getElementById('base-result').textContent = '请输入要转换的数值！';
+                return;
+            }
+            
+            try {
+                // 先转换为十进制
+                const decimal = parseInt(number, sourceBase);
+                
+                // 再转换为目标进制
+                const result = decimal.toString(targetBase);
+                
+                document.getElementById('base-result').textContent = `${number} (${sourceBase}进制) = ${result} (${targetBase}进制)`;
+            } catch (error) {
+                document.getElementById('base-result').textContent = '转换失败，请检查输入格式！';
+            }
+        });
+
+        // 位运算工具
+        document.getElementById('calculate-bit').addEventListener('click', function() {
+            const a = parseInt(document.getElementById('bit-a').value);
+            const b = parseInt(document.getElementById('bit-b').value);
+            const operation = document.getElementById('bit-operation').value;
+            
+            if (isNaN(a)) {
+                document.getElementById('bit-result').textContent = '请输入有效的数值 A！';
+                return;
+            }
+            
+            let result, operationSymbol;
+            if (operation === 'not') {
+                result = ~a;
+                operationSymbol = '~';
+                document.getElementById('bit-result').textContent = `${operationSymbol}${a} = ${result}`;
+            } else {
+                if (isNaN(b)) {
+                    document.getElementById('bit-result').textContent = '请输入有效的数值 B！';
+                    return;
+                }
+                
+                switch(operation) {
+                    case 'and': 
+                        result = a & b;
+                        operationSymbol = '&';
+                        break;
+                    case 'or': 
+                        result = a | b;
+                        operationSymbol = '|';
+                        break;
+                    case 'xor': 
+                        result = a ^ b;
+                        operationSymbol = '^';
+                        break;
+                    case 'left': 
+                        result = a << b;
+                        operationSymbol = '<<';
+                        break;
+                    case 'right': 
+                        result = a >> b;
+                        operationSymbol = '>>';
+                        break;
+                    default:
+                        result = 0;
+                        operationSymbol = '?';
+                }
+                
+                document.getElementById('bit-result').textContent = `${a} ${operationSymbol} ${b} = ${result}`;
+            }
+        });
+
+        // 大小写转换工具
+        document.getElementById('to-upper').addEventListener('click', function() {
+            const text = document.getElementById('case-text').value;
+            document.getElementById('case-result').textContent = text.toUpperCase();
+        });
+        
+        document.getElementById('to-lower').addEventListener('click', function() {
+            const text = document.getElementById('case-text').value;
+            document.getElementById('case-result').textContent = text.toLowerCase();
+        });
+        
+        document.getElementById('to-title').addEventListener('click', function() {
+            const text = document.getElementById('case-text').value;
+            // const result = text.replace(/\b\w/g, function(match) {
+            //     return match.toUpperCase();
+            // });
+            let result = '';
+            for (let i = 0; i < text.length; i++) {
+                const c = text.charAt(i);
+                result += c === c.toUpperCase() ? c.toLowerCase() : c.toUpperCase();
+            }
+            document.getElementById('case-result').textContent = result;
+        });
+
+        // 文本替换工具
+        document.getElementById('replace-button').addEventListener('click', function() {
+            const text = document.getElementById('replace-text').value;
+            const from = document.getElementById('replace-from').value;
+            const to = document.getElementById('replace-to').value;
+            
+            if (!from) {
+                document.getElementById('replace-result').textContent = '请输入要替换的文本！';
+                return;
+            }
+            
+            const result = text.replace(new RegExp(from, 'g'), to);
+            document.getElementById('replace-result').textContent = result;
+        });
+
+        // 逆元计算工具
+        document.getElementById('calculate-inverse').addEventListener('click', function() {
+            const a = parseInt(document.getElementById('inverse-a').value);
+            const m = parseInt(document.getElementById('inverse-m').value);
+            
+            if (isNaN(a) || isNaN(m) || m <= 0) {
+                document.getElementById('inverse-result').textContent = '请输入有效的数值！';
+                return;
+            }
+            
+            // 扩展欧几里得算法计算逆元
+            function extendedGCD(a, b) {
+                if (b === 0) {
+                    return { gcd: a, x: 1, y: 0 };
+                } else {
+                    const { gcd, x, y } = extendedGCD(b, a % b);
+                    return { gcd, x: y, y: x - Math.floor(a / b) * y };
+                }
+            }
+            
+            const { gcd, x } = extendedGCD(a, m);
+            
+            if (gcd !== 1) {
+                document.getElementById('inverse-result').textContent = `逆元不存在，因为 ${a} 和 ${m} 不互质！`;
+            } else {
+                const inv = (x % m + m) % m;
+                document.getElementById('inverse-result').textContent = `${a} 在模 ${m} 下的逆元是 ${inv}`;
+            }
+        });
+
+        // 快速幂工具
+        document.getElementById('calculate-power').addEventListener('click', function() {
+            const a = parseInt(document.getElementById('power-a').value);
+            const b = parseInt(document.getElementById('power-b').value);
+            const m = document.getElementById('power-m').value ? parseInt(document.getElementById('power-m').value) : null;
+            
+            if (isNaN(a) || isNaN(b)) {
+                document.getElementById('power-result').textContent = '请输入有效的底数和指数！';
+                return;
+            }
+            
+            // 快速幂算法
+            function fastPower(base, exponent, mod) {
+                if (exponent === 0) return 1;
+                if (exponent === 1) return mod ? base % mod : base;
+                
+                let result = 1;
+                base = mod ? base % mod : base;
+                
+                while (exponent > 0) {
+                    if (exponent % 2 === 1) {
+                        result = mod ? (result * base) % mod : result * base;
+                    }
+                    exponent = Math.floor(exponent / 2);
+                    base = mod ? (base * base) % mod : base * base;
+                }
+                
+                return result;
+            }
+            
+            let result;
+            if (m !== null && !isNaN(m)) {
+                if (m <= 0) {
+                    document.getElementById('power-result').textContent = '模数必须为正整数！';
+                    return;
+                }
+                result = fastPower(a, b, m);
+                document.getElementById('power-result').textContent = `${a}^${b} mod ${m} = ${result}`;
+            } else {
+                result = fastPower(a, b);
+                document.getElementById('power-result').textContent = `${a}^${b} = ${result}`;
+            }
+        });
+
+        // 组合计数工具
+        document.getElementById('calculate-comb').addEventListener('click', function() {
+            const n = parseInt(document.getElementById('comb-n').value);
+            const k = parseInt(document.getElementById('comb-k').value);
+            
+            if (isNaN(n) || isNaN(k) || n < 0 || k < 0 || k > n) {
+                document.getElementById('comb-result').textContent = '请输入有效的 n 和 k（0 ≤ k ≤ n）！';
+                return;
+            }
+            
+            // 计算组合数 C(n,k)
+            function combination(n, k) {
+                if (k === 0 || k === n) return 1;
+                k = Math.min(k, n - k); // 优化计算
+                let result = 1;
+                for (let i = 0; i < k; i++) {
+                    result *= (n - i);
+                    result = Math.floor(result / (i + 1));
+                }
+                return result;
+            }
+            
+            const comb = combination(n, k);
+            document.getElementById('comb-result').textContent = `C(${n},${k}) = ${comb}`;
+        });
+
+        // 序列统计工具
+        document.getElementById('analyze-sequence').addEventListener('click', function() {
+            const input = document.getElementById('sequence-data').value.trim();
+            if (!input) {
+                document.getElementById('sequence-result').textContent = '请输入序列数据！';
+                return;
+            }
+            
+            // 解析序列，支持空格或逗号分隔
+            const sequence = input.split(/[,\s]+/).map(Number);
+            
+            // 检查是否所有元素都是有效数字
+            if (sequence.some(isNaN)) {
+                document.getElementById('sequence-result').textContent = '序列中包含无效数字！';
+                return;
+            }
+            
+            if (sequence.length === 0) {
+                document.getElementById('sequence-result').textContent = '序列不能为空！';
+                return;
+            }
+            
+            // 计算统计信息
+            const sum = sequence.reduce((acc, val) => acc + val, 0);
+            const avg = sum / sequence.length;
+            const min = Math.min(...sequence);
+            const max = Math.max(...sequence);
+            const sorted = [...sequence].sort((a, b) => a - b);
+            const median = sorted.length % 2 === 0 ? 
+                (sorted[sorted.length/2 - 1] + sorted[sorted.length/2]) / 2 : 
+                sorted[Math.floor(sorted.length/2)];
+            
+            // 计算频率
+            const frequency = {};
+            sequence.forEach(num => {
+                frequency[num] = (frequency[num] || 0) + 1;
+            });
+            
+            // 找出众数
+            let modes = [];
+            let maxCount = 0;
+            Object.entries(frequency).forEach(([num, count]) => {
+                if (count > maxCount) {
+                    maxCount = count;
+                    modes = [parseInt(num)];
+                } else if (count === maxCount) {
+                    modes.push(parseInt(num));
+                }
+            });
+            
+            // 构建结果
+            let result = `元素数量: ${sequence.length}\n`;
+            result += `总和: ${sum}\n`;
+            result += `平均值: ${avg.toFixed(2)}\n`;
+            result += `最小值: ${min}\n`;
+            result += `最大值: ${max}\n`;
+            result += `中位数: ${median}\n`;
+            result += `众数: ${modes.join(', ')} (出现 ${maxCount} 次)`;
+            
+            document.getElementById('sequence-result').textContent = result;
+        });
+
+        // 区间操作工具
+        document.getElementById('apply-interval').addEventListener('click', function() {
+            const input = document.getElementById('interval-data').value.trim();
+            const l = parseInt(document.getElementById('interval-l').value);
+            const r = parseInt(document.getElementById('interval-r').value);
+            const delta = parseInt(document.getElementById('interval-delta').value);
+            
+            if (!input) {
+                document.getElementById('interval-result').textContent = '请输入初始序列！';
+                return;
+            }
+            
+            if (isNaN(l) || isNaN(r) || isNaN(delta)) {
+                document.getElementById('interval-result').textContent = '请输入有效的区间和增量！';
+                return;
+            }
+            
+            // 解析序列，支持空格或逗号分隔
+            const sequence = input.split(/[,\s]+/).map(Number);
+            
+            // 检查是否所有元素都是有效数字
+            if (sequence.some(isNaN)) {
+                document.getElementById('interval-result').textContent = '序列中包含无效数字！';
+                return;
+            }
+            
+            if (l < 1 || r > sequence.length || l > r) {
+                document.getElementById('interval-result').textContent = '区间不合法！';
+                return;
+            }
+            
+            // 应用区间操作
+            const result = [...sequence];
+            for (let i = l - 1; i < r; i++) {
+                result[i] += delta;
+            }
+            
+            document.getElementById('interval-result').textContent = `原始序列: ${sequence.join(', ')}\n`;
+            document.getElementById('interval-result').textContent += `操作: 区间 [${l},${r}] 增加 ${delta}\n`;
+            document.getElementById('interval-result').textContent += `结果序列: ${result.join(', ')}`;
+        });
+
+        // 图可视化工具
+        const graphCanvas = document.getElementById('graph-canvas');
+        const ctx = graphCanvas.getContext('2d');
+        // const graphTooltip = document.getElementById('graph-tooltip');
+        
+        // 设置canvas尺寸
+        function resizeCanvas() {
+            const container = graphCanvas.parentElement;
+            graphCanvas.width = container.clientWidth;
+            graphCanvas.height = container.clientHeight;
+        }
+        
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        // 图数据结构
+        let graph = {
+            nodes: new Map(), // 节点集合，键为节点ID，值为节点对象
+            edges: [] // 边集合
+        };
+        
+        // 节点对象结构
+        // {
+        //   id: 节点ID,
+        //   x: x坐标,
+        //   y: y坐标,
+        //   radius: 半径,
+        //   color: 颜色,
+        //   isDragging: 是否正在被拖动
+        // }
+        
+        // 边对象结构
+        // {
+        //   from: 起始节点ID,
+        //   to: 目标节点ID,
+        //   weight: 边权值,
+        //   isDirected: 是否有向
+        //   isWeight: 是否有边权
+        // }
+        
+        // 当前被拖动的节点
+        let draggingNode = null;
+        let isDragging = false;
+        let offsetX, offsetY;
+        
+        // 渲染图
+        document.getElementById('render-graph').addEventListener('click', function() {
+            const input = document.getElementById('graph-input').value.trim();
+            if (!input) {
+                alert('请输入图数据！');
+                return;
+            }
+            
+            // 解析输入
+            parseGraphInput(input);
+            
+            // 渲染图
+            renderGraph();
+        });
+        
+        // 清除图
+        document.getElementById('clear-graph').addEventListener('click', function() {
+            graph = {
+                nodes: new Map(),
+                edges: []
+            };
+            document.getElementById('graph-input').value = '';
+            document.getElementById('shortest-path').textContent = '结果将显示在这里...';
+            document.getElementById('longest-path').textContent = '结果将显示在这里...';
+            renderGraph();
+        });
+        
+        // 解析图输入
+        function parseGraphInput(input) {
+            graph = {
+                nodes: new Map(),
+                edges: []
+            };
+            
+            const lines = input.split('\n');
+            const width = graphCanvas.width;
+            const height = graphCanvas.height;
+            const centerX = width / 2;
+            const centerY = height / 2;
+            
+            // 先处理所有节点，确定节点数量
+            const nodeIds = new Set();
+            lines.forEach(line => {
+                const parts = line.trim().split(/\s+/).filter(Boolean);
+                if (parts.length === 1) {
+                    // 节点
+                    const nodeId = parseInt(parts[0]);
+                    if (!isNaN(nodeId)) {
+                        nodeIds.add(nodeId);
+                    }
+                } else if (parts.length >= 2) {
+                    // 边
+                    const from = parseInt(parts[0]);
+                    const to = parseInt(parts[1]);
+                    if (!isNaN(from) && !isNaN(to)) {
+                        nodeIds.add(from);
+                        nodeIds.add(to);
+                    }
+                }
+            });
+            
+            // 计算节点的初始位置（圆形布局）
+            const nodeCount = nodeIds.size;
+            const radius = Math.min(width, height) * 0.35;
+            
+            // 分配初始位置
+            let index = 0;
+            nodeIds.forEach(nodeId => {
+                const angle = (index / nodeCount) * 2 * Math.PI;
+                const x = centerX + radius * Math.cos(angle);
+                const y = centerY + radius * Math.sin(angle);
+                
+                graph.nodes.set(nodeId, {
+                    id: nodeId,
+                    x: x,
+                    y: y,
+                    radius: 20,
+                    color: '#FFFFFF',
+                    isDragging: false
+                });
+                
+                index++;
+            });
+            
+            // 处理边
+            lines.forEach(line => {
+                const parts = line.trim().split(/\s+/).filter(Boolean);
+                if (parts.length === 2 || parts.length === 3) {
+                    // 边
+                    const from = parseInt(parts[0]);
+                    const to = parseInt(parts[1]);
+                    const weight = parts.length === 3 ? parseFloat(parts[2]) : 1;
+                    const isWeight = parts.length === 3 ? 1 : 0;
+                    
+                    if (graph.nodes.has(from) && graph.nodes.has(to)) {
+                        graph.edges.push({
+                            from: from,
+                            to: to,
+                            weight: weight,
+                            isDirected: document.querySelector('input[name="graph-type"]:checked').value === 'directed',
+                            isWeight: isWeight
+                        });
+                    }
+                }
+            });
+        }
+        
+        // 渲染图
+        function renderGraph() {
+            // 清除画布
+            ctx.clearRect(0, 0, graphCanvas.width, graphCanvas.height);
+            
+            // 绘制边
+            const isDirected = document.querySelector('input[name="graph-type"]:checked').value === 'directed';
+            graph.edges.forEach(edge => {
+                const fromNode = graph.nodes.get(edge.from);
+                const toNode = graph.nodes.get(edge.to);
+                
+                if (fromNode && toNode) {
+                    //绘制边
+                    ctx.beginPath();
+                    ctx.moveTo(fromNode.x, fromNode.y);
+                    ctx.lineTo(toNode.x, toNode.y);
+                    ctx.strokeStyle = '#556163';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    
+                    // 如果是有向边，绘制箭头
+                    if (isDirected || edge.isDirected) {
+                        drawArrowhead(ctx, fromNode.x, fromNode.y, toNode.x, toNode.y);
+                    }
+                    
+                    if (edge.isWeight){
+                        // 绘制边权值
+                        const midX = (fromNode.x + toNode.x) / 2;
+                        const midY = (fromNode.y + toNode.y) / 2;
+                        
+                        ctx.fillStyle = '#000';
+                        ctx.font = '18px Inter';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        if(isDirected)ctx.fillText(edge.weight+'(to '+edge.to+')', midX, midY);
+                        else ctx.fillText(edge.weight, midX, midY);
+                    }
+                }
+            });
+            
+            // 绘制节点
+            graph.nodes.forEach(node => {
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, node.radius, 0, 2 * Math.PI);
+                ctx.fillStyle = node.color;
+                ctx.fill();
+                
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                
+                // 绘制节点标签
+                ctx.fillStyle = '#000';
+                ctx.font = 'bold 18px Inter';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(node.id, node.x, node.y);
+            });
+        }
+        
+        // 绘制箭头
+        function drawArrowhead(ctx, fromX, fromY, toX, toY) {
+            const headLength = 20;
+            const angle = Math.atan2(toY - fromY, toX - fromX);
+            
+            ctx.beginPath();
+            ctx.moveTo(toX, toY);
+            ctx.lineTo(toX - headLength * Math.cos(angle - Math.PI / 6), 
+                      toY - headLength * Math.sin(angle - Math.PI / 6));
+            ctx.lineTo(toX - headLength * Math.cos(angle + Math.PI / 6), 
+                      toY - headLength * Math.sin(angle + Math.PI / 6));
+            ctx.closePath();
+            ctx.fillStyle = '#000';
+            ctx.fill();
+        }
+        
+        // 鼠标事件处理
+        graphCanvas.addEventListener('mousedown', function(e) {
+            const rect = graphCanvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            // 检查是否点击了某个节点
+            graph.nodes.forEach(node => {
+                const dx = mouseX - node.x;
+                const dy = mouseY - node.y;
+                if (dx * dx + dy * dy <= node.radius * node.radius) {
+                    draggingNode = node;
+                    isDragging = true;
+                    offsetX = mouseX - node.x;
+                    offsetY = mouseY - node.y;
+                    node.isDragging = true;
+                    node.color = '#36CFC9'; // 高亮显示被拖动的节点
+                    renderGraph();
+                    return;
+                }
+            });
+        });
+        
+        graphCanvas.addEventListener('mousemove', function(e) {
+            if (!isDragging) return;
+            
+            const rect = graphCanvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            // 更新被拖动节点的位置
+            draggingNode.x = mouseX - offsetX;
+            draggingNode.y = mouseY - offsetY;
+            
+            // 限制节点在画布内
+            draggingNode.x = Math.max(draggingNode.radius, Math.min(graphCanvas.width - draggingNode.radius, draggingNode.x));
+            draggingNode.y = Math.max(draggingNode.radius, Math.min(graphCanvas.height - draggingNode.radius, draggingNode.y));
+            
+            // 重绘图
+            renderGraph();
+            
+            // 更新工具提示
+            // graphTooltip.textContent = `节点 ${draggingNode.id}: (${draggingNode.x.toFixed(0)}, ${draggingNode.y.toFixed(0)})`;
+            // graphTooltip.style.left = `${e.clientX + 10}px`;
+            // graphTooltip.style.top = `${e.clientY + 10}px`;
+            // graphTooltip.classList.remove('hidden');
+        });
+        
+        graphCanvas.addEventListener('mouseup', function() {
+            if (isDragging) {
+                draggingNode.isDragging = false;
+                draggingNode.color = '#FFFFFF'; // 恢复节点颜色
+                isDragging = false;
+                draggingNode = null;
+                renderGraph();
+                // graphTooltip.classList.add('hidden');
+            }
+        });
+        
+        graphCanvas.addEventListener('mouseleave', function() {
+            if (isDragging) {
+                draggingNode.isDragging = false;
+                draggingNode.color = '#FFFFFF'; // 恢复节点颜色
+                isDragging = false;
+                draggingNode = null;
+                renderGraph();
+                // graphTooltip.classList.add('hidden');
+            }
+        });
+        
+        // 计算最短路径
+        document.getElementById('calculate-path').addEventListener('click', function() {
+            const start = parseInt(document.getElementById('path-start').value);
+            const end = parseInt(document.getElementById('path-end').value);
+            
+            if (isNaN(start) || isNaN(end)) {
+                document.getElementById('shortest-path').textContent = '请输入有效的起点和终点！';
+                document.getElementById('longest-path').textContent = '请输入有效的起点和终点！';
+                return;
+            }
+            
+            if (!graph.nodes.has(start) || !graph.nodes.has(end)) {
+                document.getElementById('shortest-path').textContent = '起点或终点不存在！';
+                document.getElementById('longest-path').textContent = '起点或终点不存在！';
+                return;
+            }
+            
+            // 计算最短路径
+            const shortestPathResult = dijkstra(start, end);
+            document.getElementById('shortest-path').textContent = shortestPathResult;
+            
+            // 计算最长路径（转换为负权边，使用Bellman-Ford）
+            // const longestPathResult = bellmanFordLongest(start, end);
+            // document.getElementById('longest-path').textContent = longestPathResult;
+        });
+        
+        // Dijkstra算法计算最短路径
+        function dijkstra(start, end) {
+            const distances = new Map();
+            const previous = new Map();
+            const nodes = Array.from(graph.nodes.keys());
+            
+            // 初始化距离和前驱节点
+            nodes.forEach(node => {
+                distances.set(node, Infinity);
+                previous.set(node, null);
+            });
+            distances.set(start, 0);
+            
+            // 优先队列（简单实现）
+            let queue = [...nodes];
+            
+            while (queue.length > 0) {
+                // 找到距离最小的节点
+                let minDistance = Infinity;
+                let minNode = null;
+                let minIndex = -1;
+                
+                queue.forEach((node, index) => {
+                    if (distances.get(node) < minDistance) {
+                        minDistance = distances.get(node);
+                        minNode = node;
+                        minIndex = index;
+                    }
+                });
+                
+                if (minNode === null) break;
+                
+                // 从队列中移除当前节点
+                queue.splice(minIndex, 1);
+                
+                // 如果找到终点，结束算法
+                if (minNode === end) break;
+                
+                // 遍历所有邻居节点
+                graph.edges.forEach(edge => {
+                    if (edge.from === minNode) {
+                        const neighbor = edge.to;
+                        const alt = distances.get(minNode) + edge.weight;
+                        
+                        if (alt < distances.get(neighbor)) {
+                            distances.set(neighbor, alt);
+                            previous.set(neighbor, minNode);
+                        }
+                    } else if (!edge.isDirected && edge.to === minNode) {
+                        // 无向图的情况
+                        const neighbor = edge.from;
+                        const alt = distances.get(minNode) + edge.weight;
+                        
+                        if (alt < distances.get(neighbor)) {
+                            distances.set(neighbor, alt);
+                            previous.set(neighbor, minNode);
+                        }
+                    }
+                });
+            }
+            
+            // 构建路径
+            if (distances.get(end) === Infinity) {
+                return "没有从 " + start + " 到 " + end + " 的路径";
+            }
+            
+            let path = [];
+            let current = end;
+            
+            while (current !== null) {
+                path.unshift(current);
+                current = previous.get(current);
+            }
+            
+            return `最短路径 (距离: ${distances.get(end)}): ${path.join(' → ')}`;
+        }
+        
+        // Bellman-Ford算法计算最长路径（通过转换为负权边）
+        // function bellmanFordLongest(start, end) {
+        //     const distances = new Map();
+        //     const previous = new Map();
+        //     const nodes = Array.from(graph.nodes.keys());
+            
+        //     // 初始化距离和前驱节点
+        //     nodes.forEach(node => {
+        //         distances.set(node, -Infinity);
+        //         previous.set(node, null);
+        //     });
+        //     distances.set(start, 0);
+            
+        //     // 对所有边进行V-1次松弛操作
+        //     for (let i = 0; i < nodes.length - 1; i++) {
+        //         graph.edges.forEach(edge => {
+        //             // 转换为负权边
+        //             const weight = -edge.weight;
+                    
+        //             if (distances.get(edge.from) !== -Infinity && 
+        //                 distances.get(edge.from) + weight > distances.get(edge.to)) {
+        //                 distances.set(edge.to, distances.get(edge.from) + weight);
+        //                 previous.set(edge.to, edge.from);
+        //             }
+                    
+        //             // 无向图的情况
+        //             if (!edge.isDirected && 
+        //                 distances.get(edge.to) !== -Infinity && 
+        //                 distances.get(edge.to) + weight > distances.get(edge.from)) {
+        //                 distances.set(edge.from, distances.get(edge.to) + weight);
+        //                 previous.set(edge.from, edge.to);
+        //             }
+        //         });
+        //     }
+            
+        //     // 检查正权环
+        //     let hasPositiveCycle = false;
+        //     graph.edges.forEach(edge => {
+        //         const weight = -edge.weight;
+                
+        //         if (distances.get(edge.from) !== -Infinity && 
+        //             distances.get(edge.from) + weight > distances.get(edge.to)) {
+        //             hasPositiveCycle = true;
+        //         }
+                
+        //         // 无向图的情况
+        //         if (!edge.isDirected && 
+        //             distances.get(edge.to) !== -Infinity && 
+        //             distances.get(edge.to) + weight > distances.get(edge.from)) {
+        //             hasPositiveCycle = true;
+        //         }
+        //     });
+            
+        //     if (hasPositiveCycle) {
+        //         return "存在正权环，最长路径不存在";
+        //     }
+            
+        //     // 构建路径
+        //     if (distances.get(end) === -Infinity) {
+        //         return "没有从 " + start + " 到 " + end + " 的路径";
+        //     }
+            
+        //     let path = [];
+        //     let current = end;
+            
+        //     while (current !== null) {
+        //         path.unshift(current);
+        //         current = previous.get(current);
+        //     }
+            
+        //     // 转换回正权值
+        //     const longestDistance = -distances.get(end);
+            
+        //     return `最长路径 (权重: ${longestDistance}): ${path.join(' → ')}`;
+        // }
+        
+        // 初始渲染
+        renderGraph();
+        
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+    
